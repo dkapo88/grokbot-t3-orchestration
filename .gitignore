@@ -1,0 +1,11 @@
+config.json
+secrets/
+*.token
+*.cookies
+*.resp
+node_modules/
+scripts/node_modules/
+*.log
+*.tmp.*
+.env
+.env.*

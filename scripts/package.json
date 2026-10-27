@@ -1,0 +1,15 @@
+{
+  "name": "grokbot-t3-orchestration-scripts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Helpers that let a Grok Bot launch, steer, monitor and archive T3 Code threads.",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": { "check": "bash ./check.sh" },
+  "dependencies": {
+    "https-proxy-agent": "9.1.0",
+    "undici": "6.29.1",
+    "ws": "8.22.0"
+  }
+}

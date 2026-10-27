@@ -1,0 +1,22 @@
+# T3 Code server as a systemd USER unit on the always-on coding host.
+# Install: mkdir -p ~/.config/systemd/user && cp t3code.service ~/.config/systemd/user/
+#          sudo loginctl enable-linger "$USER"
+#          systemctl --user daemon-reload && systemctl --user enable --now t3code
+# Restart only through systemctl so exactly one `t3 serve` runs.
+[Unit]
+Description=T3 Code server
+After=network-online.target
+
+[Service]
+# Adjust the t3 path, port and workspace root to your host.
+Environment=PATH=%h/.local/bin:%h/.t3/bin:/usr/local/bin:/usr/bin:/bin
+# Harness secrets that implementer threads may need (webhook URL/key variable values) go in this file, mode 600.
+EnvironmentFile=-%h/.config/t3code/env
+# Subscriptions only: make sure no API key sneaks in and bills by the token.
+UnsetEnvironment=ANTHROPIC_API_KEY OPENAI_API_KEY
+ExecStart=%h/.local/bin/t3 serve --host 127.0.0.1 --port 3773 %h/repos
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

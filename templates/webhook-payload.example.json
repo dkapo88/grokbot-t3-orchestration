@@ -1,0 +1,15 @@
+{
+  "taskId": "web-app-142",
+  "status": "pr-opened",
+  "informational": false,
+  "threadId": "00000000-0000-0000-0000-000000000000",
+  "title": "Add password reset email",
+  "pr": "https://github.com/your-org/web-app/pull/142",
+  "head": "1a2b3c4",
+  "base": "9f8e7d6",
+  "changes": ["Reset email template and route", "Rate limit on reset requests"],
+  "review": { "result": "2 minor findings fixed", "thread": "review child id" },
+  "qa": { "result": "pending" },
+  "limits": "Email delivery tested against a local mail catcher only",
+  "next": "Waiting for CI and the GitHub PR review"
+}

@@ -1,0 +1,122 @@
+{
+  "_comment": "Copy to config.json (git-ignored) and edit. Credential files live in ./secrets (git-ignored, chmod 600). Every value here is an example; pick your own.",
+  "defaultEnvironment": "primary",
+  "environments": {
+    "primary": {
+      "role": "primary",
+      "_role_help": "primary = always-on coding host for implement, review and non-Apple QA. apple-only = a Mac used only for Apple simulator QA and iOS builds. local = a T3 server on the bot's own box (testing only).",
+      "baseUrl": "https://coding-host.tailnet-name.ts.net",
+      "proxy": "http://127.0.0.1:8118",
+      "auth": { "tokenFile": "secrets/primary.token" },
+      "reposRoot": "/home/dev/repos",
+      "maxHeavyJobs": 0
+    },
+    "apple": {
+      "role": "apple-only",
+      "baseUrl": "https://mac-builder.tailnet-name.ts.net",
+      "proxy": "http://127.0.0.1:8118",
+      "auth": { "cookieFile": "secrets/apple.cookies" },
+      "reposRoot": "/Users/you/code",
+      "maxHeavyJobs": 1
+    },
+    "local": {
+      "role": "local",
+      "baseUrl": "http://127.0.0.1:3773",
+      "auth": { "tokenFile": "secrets/local.token" }
+    }
+  },
+  "projects": [
+    {
+      "name": "web-app",
+      "repo": "your-org/web-app",
+      "path": "/home/dev/repos/web-app",
+      "environment": "primary",
+      "pmBot": "Web App bot",
+      "deploy": "merge-to-main deploys via your CI",
+      "paidReviewer": false
+    },
+    {
+      "name": "mobile-app",
+      "repo": "your-org/mobile-app",
+      "path": "/home/dev/repos/mobile-app",
+      "environment": "primary",
+      "appleEnvironment": "apple",
+      "applePath": "/Users/you/code/mobile-app",
+      "pmBot": "Mobile bot",
+      "paidReviewer": true
+    }
+  ],
+  "modelRouting": {
+    "_comment": "Example routing. Use the models and harnesses you subscribe to. Option ids differ per harness and model; check them in T3's model picker or server.getConfig.",
+    "roles": {
+      "implement": {
+        "instanceId": "claudeAgent", "model": "claude-opus-5-5",
+        "options": [{ "id": "effort", "value": "medium" }]
+      },
+      "implement-complex": {
+        "instanceId": "claudeAgent", "model": "claude-opus-5-5",
+        "options": [{ "id": "effort", "value": "xhigh" }]
+      },
+      "review": {
+        "instanceId": "pi", "model": "opencode-go/deepseek-v4.1-flash",
+        "options": [{ "id": "thinking", "value": "max" }],
+        "toolsReadOnly": true
+      },
+      "qa": {
+        "instanceId": "cursor", "model": "grok-4.7",
+        "options": [
+          { "id": "reasoning_effort", "value": "medium" },
+          { "id": "contextWindow", "value": "256k" },
+          { "id": "fastMode", "value": false }
+        ]
+      },
+      "apple-qa": {
+        "instanceId": "cursor", "model": "grok-4.7",
+        "options": [
+          { "id": "reasoning_effort", "value": "medium" },
+          { "id": "fastMode", "value": false }
+        ]
+      },
+      "github-pr-review": { "via": "github-app", "trigger": "@codex review", "_note": "Runs on GitHub, not in T3. Comment the trigger if it did not start on its own." },
+      "paid-review": { "via": "github-app", "trigger": "", "_note": "Optional paid review bot. Only for projects with paidReviewer true, once per PR, on the final diff." }
+    },
+    "banned": [
+      { "instanceId": "grok", "reason": "Grok models run through the cursor instance in this example routing; the grok instance is not used" },
+      { "modelPattern": "^grok", "unlessInstanceId": "cursor", "reason": "Grok models only via the cursor instance" }
+    ],
+    "noFallback": true
+  },
+  "policy": {
+    "merge": "auto-when-gates-pass",
+    "_merge_help": "auto-when-gates-pass = bots merge (and deploy if that is the project flow) once CI, pre-PR review, QA and GitHub review all pass with findings resolved. ask-human = bots open the PR and ask before merging.",
+    "gates": ["ci", "pre-pr-review", "qa", "github-pr-review"],
+    "askBefore": ["cloud-mobile-builds", "deleting-threads", "raising-model-or-effort-above-routing", "money-or-auth-changes-without-spec"],
+    "costGuardrails": {
+      "subscriptionsOnly": true,
+      "fastModeOff": true,
+      "paidReviewerOncePerPr": true,
+      "qaMaxScreenshots": 25,
+      "qaMaxRequests": 150,
+      "oneReviewerNoTwins": true,
+      "doNotPollUsageLimits": true
+    }
+  },
+  "webhooks": {
+    "_comment": "Each PM bot has an inbound webhook routine. Briefs name the env var NAMES that hold the URL and key on the T3 host; values never appear in thread text.",
+    "urlEnv": "PM_WEBHOOK_URL",
+    "keyEnv": "PM_WEBHOOK_KEY",
+    "maxPayloadBytes": 3500
+  },
+  "monitoring": {
+    "sweepEveryMinutes": 60,
+    "staleThreadDays": 3,
+    "handoverAtRuns": 80,
+    "lowDiskGb": 30
+  },
+  "hygiene": {
+    "archiveChildrenOnFinish": true,
+    "archiveImplementerAfterMerge": true,
+    "deleteThreadsNeedsOwnerOk": true,
+    "leftovers": { "linux": "delete", "macos": "move-to-trash" }
+  }
+}
